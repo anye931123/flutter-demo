@@ -165,8 +165,184 @@ class GalleryDrawer extends StatelessWidget{
       secondary: new Icon(defaultTargetPlatform==TargetPlatform.iOS?Icons.star:Icons.phone_android),
         title: new Text(defaultTargetPlatform==TargetPlatform.iOS?'Mountain View':'android'),
         value: TargetPlatform.android,
-        groupValue: ,
-        onChanged: null);
-    return null;
+        groupValue: Theme.of(context).platform,
+        onChanged: onPlatformChanged,
+      selected: Theme.of(context).platform==TargetPlatform.android,
+    );
+
+    final Widget cupertinoItem = new RadioListTile<TargetPlatform>(
+      // on iOS, we don't want to show the iPhone icon
+      secondary: new Icon(defaultTargetPlatform == TargetPlatform.iOS ? Icons.star_border : Icons.phone_iphone),
+      title: new Text(defaultTargetPlatform == TargetPlatform.iOS ? 'Cupertino' : 'iOS'),
+      value: TargetPlatform.iOS,
+      groupValue: Theme.of(context).platform,
+      onChanged: onPlatformChanged,
+      selected: Theme.of(context).platform == TargetPlatform.iOS,
+    );
+
+    final List<Widget> textSizeItems = <Widget>[];
+    final Map<double, String> textSizes = <double, String>{
+      null: 'System Default',
+      0.8: 'Small',
+      1.0: 'Normal',
+      1.3: 'Large',
+      2.0: 'Huge',
+    };
+
+    for(double size in textSizes.keys){
+      textSizeItems.add(new RadioListTile<double>(
+        secondary: const Icon(Icons.text_fields),
+          title: new Text(textSizes[size]),
+          value: size,
+          groupValue: textScaleFactor,
+          onChanged: onTextScaleFactorChanged,
+        selected: textScaleFactor==size,
+      ));
+    }
+
+    final Widget animateSlowlyItem = new CheckboxListTile(
+      title: const Text('Animate Slowly'),
+      value: timeDilation != 1.0,
+      onChanged: (bool value) {
+        onTimeDilationChanged(value ? 20.0 : 1.0);
+      },
+      secondary: const Icon(Icons.hourglass_empty),
+      selected: timeDilation != 1.0,
+    );
+    final Widget animateSloewItem=new CheckboxListTile(
+      secondary: const Icon(Icons.hourglass_empty),
+      title: const Text("Animate Slowly"),
+        value: timeDilation!=1.0,
+        onChanged: (bool value){
+        onTimeDilationChanged(value?20.0:1.0);
+        },
+      selected: timeDilation!=1.0,
+    );
+
+    final Widget overrideDirectionItem = new CheckboxListTile(
+      title: const Text('Force RTL'),
+      value: overrideDirection == TextDirection.rtl,
+      onChanged: (bool value) {
+        onOverrideDirectionChanged(value ? TextDirection.rtl : TextDirection.ltr);
+      },
+      secondary: const Icon(Icons.format_textdirection_r_to_l),
+      selected: overrideDirection == TextDirection.rtl,
+    );
+
+    final Widget sendFeedbackItem = new ListTile(
+      leading: const Icon(Icons.report),
+      title: const Text('Send feedback'),
+      onTap: onSendFeedback ?? () {
+        launch('https://github.com/flutter/flutter/issues/new');
+      },
+    );
+
+    final Widget aboutItem = new AboutListTile(
+        icon: const FlutterLogo(),
+        applicationVersion: 'April 2018 Preview',
+        applicationIcon: const FlutterLogo(),
+        applicationLegalese: '© 2017 The Chromium Authors',
+        aboutBoxChildren: <Widget>[
+          new Padding(
+              padding: const EdgeInsets.only(top: 24.0),
+              child: new RichText(
+                  text: new TextSpan(
+                      children: <TextSpan>[
+                        new TextSpan(
+                            style: aboutTextStyle,
+                            text: 'Flutter is an early-stage, open-source project to help developers '
+                                'build high-performance, high-fidelity, mobile apps for '
+                                '${defaultTargetPlatform == TargetPlatform.iOS ? 'multiple platforms' : 'iOS and Android'} '
+                                'from a single codebase. This gallery is a preview of '
+                                "Flutter's many widgets, behaviors, animations, layouts, "
+                                'and more. Learn more about Flutter at '
+                        ),
+                        new LinkTextSpan(
+                            style: linkStyle,
+                            url: 'https://flutter.io'
+                        ),
+                        new TextSpan(
+                            style: aboutTextStyle,
+                            text: '.\n\nTo see the source code for this app, please visit the '
+                        ),
+                        new LinkTextSpan(
+                            style: linkStyle,
+                            url: 'https://goo.gl/iv1p4G',
+                            text: 'flutter github repo'
+                        ),
+                        new TextSpan(
+                            style: aboutTextStyle,
+                            text: '.'
+                        )
+                      ]
+                  )
+              )
+          )
+        ]
+    );
+
+    final List<Widget> allDrawerItems = <Widget>[
+      new GalleryDrawerHeader(
+        light: galleryTheme.theme.brightness == Brightness.light,
+      ),
+    ]
+      ..addAll(themeItems)
+      ..addAll(<Widget>[
+        const Divider(),
+        mountainViewItem,
+        cupertinoItem,
+        const Divider(),
+      ])
+      ..addAll(textSizeItems)
+      ..addAll(<Widget>[
+        overrideDirectionItem,
+        const Divider(),
+        animateSlowlyItem,
+        const Divider(),
+      ]);
+
+    bool addedOptionalItem = false;
+    if (onCheckerboardOffscreenLayersChanged != null) {
+      allDrawerItems.add(new CheckboxListTile(
+        title: const Text('Checkerboard Offscreen Layers'),
+        value: checkerboardOffscreenLayers,
+        onChanged: onCheckerboardOffscreenLayersChanged,
+        secondary: const Icon(Icons.assessment),
+        selected: checkerboardOffscreenLayers,
+      ));
+      addedOptionalItem = true;
+    }
+
+    if (onCheckerboardRasterCacheImagesChanged != null) {
+      allDrawerItems.add(new CheckboxListTile(
+        title: const Text('Checkerboard Raster Cache Images'),
+        value: checkerboardRasterCacheImages,
+        onChanged: onCheckerboardRasterCacheImagesChanged,
+        secondary: const Icon(Icons.assessment),
+        selected: checkerboardRasterCacheImages,
+      ));
+      addedOptionalItem = true;
+    }
+
+    if (onShowPerformanceOverlayChanged != null) {
+      allDrawerItems.add(new CheckboxListTile(
+        title: const Text('Performance Overlay'),
+        value: showPerformanceOverlay,
+        onChanged: onShowPerformanceOverlayChanged,
+        secondary: const Icon(Icons.assessment),
+        selected: showPerformanceOverlay,
+      ));
+      addedOptionalItem = true;
+    }
+
+    if (addedOptionalItem)
+      allDrawerItems.add(const Divider());
+
+    allDrawerItems.addAll(<Widget>[
+      sendFeedbackItem,
+      aboutItem,
+    ]);
+
+    return new Drawer(child: new ListView(primary: false, children: allDrawerItems));
   }
 }

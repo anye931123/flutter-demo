@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'item.dart';
 import 'theme.dart';
+import 'drawer.dart';
 
 const double _kFlexibleSpaceMaxHeight = 256.0;
 const String _kGalleryAssetsPackage = 'flutter_gallery_assets';
@@ -82,7 +83,27 @@ class GalleryHome extends StatefulWidget {
   final ValueChanged<TextDirection> onOverrideDirectionChanged;
 
   final VoidCallback onSendFeedback;
-
+  const GalleryHome({
+    Key key,
+    this.galleryTheme,
+    @required this.onThemeChanged,
+    this.timeDilation,
+    @required this.onTimeDilationChanged,
+    this.textScaleFactor,
+    this.onTextScaleFactorChanged,
+    this.showPerformanceOverlay,
+    this.onShowPerformanceOverlayChanged,
+    this.checkerboardRasterCacheImages,
+    this.onCheckerboardRasterCacheImagesChanged,
+    this.checkerboardOffscreenLayers,
+    this.onCheckerboardOffscreenLayersChanged,
+    this.onPlatformChanged,
+    this.overrideDirection: TextDirection.ltr,
+    this.onOverrideDirectionChanged,
+    this.onSendFeedback,
+  })  : assert(onThemeChanged != null),
+        assert(onTimeDilationChanged != null),
+        super(key: key);
   @override
   State<StatefulWidget> createState() {
     return new GalleryHomeState();
@@ -144,13 +165,66 @@ class GalleryHomeState extends State<GalleryHome>
 
       listItems.add(galleryItem);
     }
+
+    return listItems;
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget home=new Scaffold(
+    Widget home = new Scaffold(
       key: _scaffoldKey,
-      drawer: new Gall,
-    )
+      drawer: new GalleryDrawer(
+        onThemeChanged: widget.onThemeChanged,
+        timeDilation: widget.timeDilation,
+        onTimeDilationChanged: widget.onTimeDilationChanged,
+        textScaleFactor: widget.textScaleFactor,
+        onTextScaleFactorChanged: widget.onTextScaleFactorChanged,
+        showPerformanceOverlay: widget.showPerformanceOverlay,
+        onShowPerformanceOverlayChanged: widget.onShowPerformanceOverlayChanged,
+        checkerboardRasterCacheImages: widget.checkerboardRasterCacheImages,
+        onCheckerboardRasterCacheImagesChanged:
+            widget.onCheckerboardRasterCacheImagesChanged,
+        checkerboardOffscreenLayers: widget.checkerboardOffscreenLayers,
+        onCheckerboardOffscreenLayersChanged:
+            widget.onCheckerboardOffscreenLayersChanged,
+        onPlatformChanged: widget.onPlatformChanged,
+        overrideDirection: widget.overrideDirection,
+        onOverrideDirectionChanged: widget.onOverrideDirectionChanged,
+        onSendFeedback: widget.onSendFeedback,
+      ),
+      body: new CustomScrollView(
+        slivers: <Widget>[
+          const SliverAppBar(
+            pinned: true,
+            expandedHeight: _kFlexibleSpaceMaxHeight,
+            flexibleSpace: const FlexibleSpaceBar(
+              title: const Text('Flutter Gallery'),
+              background: const _AppBarBackground(
+                animation: kAlwaysDismissedAnimation,
+              ),
+            ),
+          ),
+          new SliverList(
+              delegate: new SliverChildListDelegate(_galleryListItems()))
+        ],
+      ),
+    );
+
+    if (GalleryHome.showPreviewBanner) {
+      home = new Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          home,
+          new FadeTransition(
+            opacity: new CurvedAnimation(
+                parent: _controller, curve: Curves.easeInOut),
+            child: const Banner(
+                message: 'PREVIEW', location: BannerLocation.topEnd),
+          )
+        ],
+      );
+    }
+
+    return home;
   }
 }
